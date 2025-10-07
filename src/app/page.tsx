@@ -6,9 +6,10 @@ import { Camera, Code, Video, Palette, ArrowRight, Check, Sparkles } from 'lucid
 // Main Waitlist App Component
 export default function PortfolioWaitlist() {
   const [stage, setStage] = useState('landing'); // landing, role-select, survey, success
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [responses, setResponses] = useState({});
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [responses, setResponses] = useState<Record<string, string | string[]>>({});
   const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Role configurations
   const roles = [
@@ -558,7 +559,7 @@ export default function PortfolioWaitlist() {
   const currentQuestions = selectedRole ? surveyQuestions[selectedRole] : [];
 
   // Handle answer selection
-  const handleAnswer = (questionId, answer) => {
+  const handleAnswer = (questionId: string, answer: string) => {
     const question = currentQuestions.find(q => q.id === questionId);
     
     if (question.type === 'multiple') {
@@ -588,15 +589,34 @@ export default function PortfolioWaitlist() {
   );
 
   // Submit to waitlist
-  const handleSubmit = () => {
-    // In production, this would POST to your backend
-    console.log('Waitlist submission:', {
-      email,
-      role: selectedRole,
-      responses,
-      timestamp: new Date().toISOString()
-    });
-    setStage('success');
+  const handleSubmit = async () => {
+    if (!email || !selectedRole) return;
+    
+    setSubmitting(true);
+    
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          role: selectedRole,
+          responses,
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to submit');
+      }
+
+      setStage('success');
+    } catch (error) {
+      console.error('Submission failed:', error);
+      alert(error instanceof Error ? error.message : 'Failed to join waitlist. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // LANDING PAGE
@@ -816,14 +836,14 @@ export default function PortfolioWaitlist() {
             />
             <button
               onClick={handleSubmit}
-              disabled={!allQuestionsAnswered || !email}
+              disabled={!allQuestionsAnswered || !email || submitting}
               className={`w-full py-4 rounded-lg font-semibold text-lg transition-all ${
-                allQuestionsAnswered && email
+                allQuestionsAnswered && email && !submitting
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
                   : 'bg-white/10 cursor-not-allowed opacity-50'
               }`}
             >
-              Join Waitlist
+              {submitting ? 'Submitting...' : 'Join Waitlist'}
             </button>
           </div>
         </div>
