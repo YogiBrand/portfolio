@@ -3,10 +3,22 @@
 import React, { useState } from 'react';
 import { Camera, Code, Video, Palette, ArrowRight, Check, Sparkles } from 'lucide-react';
 
+// Types
+type RoleId = 'photographer' | 'developer' | 'video-editor' | 'creative';
+type QuestionType = 'single' | 'multiple';
+
+interface Question {
+  id: string;
+  question: string;
+  type: QuestionType;
+  options: string[];
+  maxSelections?: number;
+}
+
 // Main Waitlist App Component
 export default function PortfolioWaitlist() {
   const [stage, setStage] = useState('landing'); // landing, role-select, survey, success
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<RoleId | null>(null);
   const [responses, setResponses] = useState<Record<string, string | string[]>>({});
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -48,7 +60,7 @@ export default function PortfolioWaitlist() {
   ];
 
   // Role-specific survey questions
-  const surveyQuestions = {
+  const surveyQuestions: Record<RoleId, Question[]> = {
     photographer: [
       {
         id: 'portfolio-blocker',
@@ -556,14 +568,16 @@ export default function PortfolioWaitlist() {
 
   // Get current role config
   const currentRole = roles.find(r => r.id === selectedRole);
-  const currentQuestions = selectedRole ? surveyQuestions[selectedRole] : [];
+  const currentQuestions: Question[] = selectedRole ? surveyQuestions[selectedRole as RoleId] : [];
 
   // Handle answer selection
   const handleAnswer = (questionId: string, answer: string) => {
     const question = currentQuestions.find(q => q.id === questionId);
     
+    if (!question) return;
+    
     if (question.type === 'multiple') {
-      const current = responses[questionId] || [];
+      const current = (responses[questionId] || []) as string[];
       const maxSelections = question.maxSelections || Infinity;
       
       if (current.includes(answer)) {
@@ -584,9 +598,10 @@ export default function PortfolioWaitlist() {
   };
 
   // Check if all questions answered
-  const allQuestionsAnswered = currentQuestions.every(q => 
-    responses[q.id] && (Array.isArray(responses[q.id]) ? responses[q.id].length > 0 : true)
-  );
+  const allQuestionsAnswered = currentQuestions.every(q => {
+    const response = responses[q.id];
+    return response && (Array.isArray(response) ? response.length > 0 : true);
+  });
 
   // Submit to waitlist
   const handleSubmit = async () => {
