@@ -24,9 +24,16 @@ export default function PortfolioWaitlist() {
   const [submitting, setSubmitting] = useState(false);
 
   // Role configurations
-  const roles = [
+  const roles: Array<{
+    id: RoleId;
+    name: string;
+    icon: any;
+    color: string;
+    description: string;
+    heroLine: string;
+  }> = [
     {
-      id: 'photographer',
+      id: 'photographer' as const,
       name: 'Photographer',
       icon: Camera,
       color: 'from-purple-500 to-pink-500',
@@ -34,7 +41,7 @@ export default function PortfolioWaitlist() {
       heroLine: 'Your best work deserves a portfolio as beautiful as your photos'
     },
     {
-      id: 'developer',
+      id: 'developer' as const,
       name: 'Developer',
       icon: Code,
       color: 'from-blue-500 to-cyan-500',
@@ -42,7 +49,7 @@ export default function PortfolioWaitlist() {
       heroLine: 'Ship your portfolio faster than you can say git push'
     },
     {
-      id: 'video-editor',
+      id: 'video-editor' as const,
       name: 'Video Editor',
       icon: Video,
       color: 'from-red-500 to-orange-500',
@@ -50,7 +57,7 @@ export default function PortfolioWaitlist() {
       heroLine: 'Let your edits do the talking with an epic showreel site'
     },
     {
-      id: 'creative',
+      id: 'creative' as const,
       name: 'Creative / Designer',
       icon: Palette,
       color: 'from-green-500 to-teal-500',
