@@ -1,0 +1,66 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model WaitlistUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      String   // photographer, developer, video-editor, creative
+  
+  // Metadata
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  responses SurveyResponse[]
+  
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+  @@map("waitlist_users")
+}
+
+model SurveyResponse {
+  id             String   @id @default(cuid())
+  waitlistUserId String
+  questionId     String
+  answer         String   @db.Text
+  
+  // For multiple choice questions
+  isMultipleChoice Boolean @default(false)
+  
+  waitlistUser   WaitlistUser @relation(fields: [waitlistUserId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([waitlistUserId])
+  @@index([questionId])
+  @@map("survey_responses")
+}
+
+// Analytics for tracking conversion
+model WaitlistAnalytics {
+  id           String   @id @default(cuid())
+  event        String   // page_view, role_selected, survey_started, survey_completed, email_submitted
+  role         String?
+  metadata     Json?
+  
+  ipAddress    String?
+  userAgent    String?
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([event])
+  @@index([createdAt])
+  @@map("waitlist_analytics")
+}
+
