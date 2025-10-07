@@ -800,7 +800,7 @@ export default function PortfolioWaitlist() {
                 <div className="space-y-2">
                   {question.options.map(option => {
                     const isSelected = question.type === 'multiple'
-                      ? (responses[question.id] || []).includes(option)
+                      ? (Array.isArray(responses[question.id]) && responses[question.id].includes(option))
                       : responses[question.id] === option;
 
                     return (
