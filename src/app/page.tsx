@@ -793,7 +793,7 @@ export default function PortfolioWaitlist() {
                 
                 {question.type === 'multiple' && question.maxSelections && (
                   <p className="text-sm text-purple-400 mb-3">
-                    Selected: {(responses[question.id] || []).length} / {question.maxSelections}
+                    Selected: {(Array.isArray(responses[question.id]) ? responses[question.id].length : 0)} / {question.maxSelections}
                   </p>
                 )}
                 
